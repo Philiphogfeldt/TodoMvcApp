@@ -1,19 +1,20 @@
-using Backend_Task01_API.Data;
 using Microsoft.EntityFrameworkCore;
-
+using TodoMvcApp.Data;
+using TodoMvcApp.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<NotesContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("TodoContext")));
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register the repository
+builder.Services.AddScoped<ITodoRepository, TodoRepository>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
 	app.UseSwagger();
@@ -22,7 +23,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+app.UseCors(options =>
+	options.AllowAnyOrigin()
+		   .AllowAnyMethod()
+		   .AllowAnyHeader());
 
 app.UseAuthorization();
 
