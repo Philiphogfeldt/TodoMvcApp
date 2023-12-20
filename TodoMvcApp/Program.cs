@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TodoMvcApp.Data;
 using TodoMvcApp.Interfaces;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();

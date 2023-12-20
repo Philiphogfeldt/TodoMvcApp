@@ -1,18 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TodoMvcApp.Interfaces;
-using TodoMvcApp.ViewModels;
+using TodoMvcApp.Models;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using TodoMvcApp.Models;
-
-
 
 namespace TodoMvcApp.Controllers
 {
-
 	[ApiController]
-	[Route("[controller]")]
+	[Route("")]
 	public class TodoController : ControllerBase
 	{
 		private readonly ITodoRepository _todoRepository;
@@ -22,22 +18,30 @@ namespace TodoMvcApp.Controllers
 			_todoRepository = todoRepository;
 		}
 
-		[HttpGet]
-		public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetAllTodos()
+		[HttpGet("notes")]
+		public async Task<ActionResult<IEnumerable<TodoItem>>> GetAllTodos(bool? isDone = null)
 		{
 			var todoItems = await _todoRepository.GetAllAsync();
-			var todoItemDtos = todoItems.Select(item => new TodoItemDto
-			{
-				Id = item.Id,
-				Name = item.Name,
-				IsComplete = item.IsComplete
-			});
 
-			return Ok(todoItemDtos);
+			if (isDone.HasValue)
+			{
+				todoItems = todoItems.Where(item => item.IsDone == isDone.Value);
+			}
+
+			return Ok(todoItems);
 		}
 
-		[HttpGet("{id}")]
-		public async Task<ActionResult<TodoItemDto>> GetTodoItem(int id)
+		[HttpGet("remaining")]
+		public async Task<ActionResult<int>> GetRemainingCount()
+		{
+			var count = (await _todoRepository.GetAllAsync())
+				.Count(item => !item.IsDone);
+
+			return Ok(count);
+		}
+
+		[HttpGet("notes/{id}")]
+		public async Task<ActionResult<TodoItem>> GetTodoItem(int id)
 		{
 			var todoItem = await _todoRepository.GetByIdAsync(id);
 			if (todoItem == null)
@@ -45,60 +49,40 @@ namespace TodoMvcApp.Controllers
 				return NotFound();
 			}
 
-			var todoItemDto = new TodoItemDto
-			{
-				Id = todoItem.Id,
-				Name = todoItem.Name,
-				IsComplete = todoItem.IsComplete
-			};
-
-			return Ok(todoItemDto);
+			return Ok(todoItem);
 		}
 
-		[HttpPost]
-		public async Task<ActionResult<TodoItemDto>> AddTodoItem(TodoItemDto todoItemDto)
+		[HttpPost("notes")]
+		public async Task<ActionResult<TodoItem>> AddTodoItem(TodoItem todoItem)
 		{
-			var todoItem = new TodoItem
-			{
-				Name = todoItemDto.Name,
-				IsComplete = todoItemDto.IsComplete
-			};
-
 			await _todoRepository.AddAsync(todoItem);
-
-			var newTodoItemDto = new TodoItemDto
-			{
-				Id = todoItem.Id,
-				Name = todoItem.Name,
-				IsComplete = todoItem.IsComplete
-			};
-
-			return CreatedAtAction(nameof(GetTodoItem), new { id = newTodoItemDto.Id }, newTodoItemDto);
+			return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);
 		}
 
-		[HttpPut("{id}")]
-		public async Task<IActionResult> UpdateTodoItem(int id, TodoItemDto todoItemDto)
+
+		[HttpPut("notes/{id}")]
+		public async Task<IActionResult> UpdateTodoItem(int id, TodoItem todoItem)
 		{
-			if (id != todoItemDto.Id)
+			if (id != todoItem.Id)
 			{
 				return BadRequest();
 			}
 
-			var todoItem = await _todoRepository.GetByIdAsync(id);
-			if (todoItem == null)
+			var existingItem = await _todoRepository.GetByIdAsync(id);
+			if (existingItem == null)
 			{
 				return NotFound();
 			}
 
-			todoItem.Name = todoItemDto.Name;
-			todoItem.IsComplete = todoItemDto.IsComplete;
+			existingItem.Name = todoItem.Name;
+			existingItem.IsDone = todoItem.IsDone;
 
-			await _todoRepository.UpdateAsync(todoItem);
+			await _todoRepository.UpdateAsync(existingItem);
 
 			return NoContent();
 		}
 
-		[HttpDelete("{id}")]
+		[HttpDelete("notes/{id}")]
 		public async Task<IActionResult> DeleteTodoItem(int id)
 		{
 			var todoItem = await _todoRepository.GetByIdAsync(id);
@@ -111,5 +95,13 @@ namespace TodoMvcApp.Controllers
 
 			return NoContent();
 		}
+
+		[HttpPost("clear-completed")]
+		public async Task<IActionResult> ClearCompletedTodos()
+		{
+			await _todoRepository.ClearAllCompletedAsync();
+			return NoContent();
+		}
+
 	}
 }

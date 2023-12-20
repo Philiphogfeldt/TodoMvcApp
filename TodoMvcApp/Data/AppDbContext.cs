@@ -9,6 +9,7 @@ namespace TodoMvcApp.Data
 		{
 		}
 
+		//public TodoContext() { }
 		public DbSet<TodoItem> TodoItems { get; set; }
 		
 	}
