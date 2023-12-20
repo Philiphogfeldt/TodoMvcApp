@@ -41,17 +41,17 @@ namespace XUnitTests
 		{
 			var mockRepo = new Mock<ITodoRepository>();
 			mockRepo.Setup(repo => repo.GetAllAsync()).ReturnsAsync(new List<TodoItem>
-	{
-		new TodoItem {
+			{
+			new TodoItem {
 			Id = 1,
 			Name = "Test Todo 1",
 			IsDone = false },
 
-		new TodoItem {
+			new TodoItem {
 			Id = 2,
 			Name = "Test Todo 2",
 			IsDone = true }
-	});
+			});
 
 			var controller = new TodoController(mockRepo.Object);
 			var result = await controller.GetAllTodos();
