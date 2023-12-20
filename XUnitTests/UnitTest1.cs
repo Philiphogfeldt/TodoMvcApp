@@ -14,6 +14,7 @@ namespace XUnitTests
 		[Fact]
 		public async Task AddTodoItem_ReturnsCreatedTodoItem()
 		{
+			// Arrange
 			var mockRepo = new Mock<ITodoRepository>();
 			var newItem = new TodoItem
 			{
@@ -26,8 +27,11 @@ namespace XUnitTests
 					.Returns(Task.CompletedTask);
 
 			var controller = new TodoController(mockRepo.Object);
+
+			// Act
 			var result = await controller.AddTodoItem(newItem);
 
+			// Assert
 			var actionResult = Assert.IsType<CreatedAtActionResult>(result.Result);
 			var createdTodoItem = Assert.IsType<TodoItem>(actionResult.Value);
 
@@ -39,6 +43,7 @@ namespace XUnitTests
 		[Fact]
 		public async Task GetAllTodos_ReturnsTodos()
 		{
+			// Arrange
 			var mockRepo = new Mock<ITodoRepository>();
 			mockRepo.Setup(repo => repo.GetAllAsync()).ReturnsAsync(new List<TodoItem>
 			{
@@ -54,14 +59,18 @@ namespace XUnitTests
 			});
 
 			var controller = new TodoController(mockRepo.Object);
+
+			// Act
 			var result = await controller.GetAllTodos();
 
+			// Assert
 			Assert.IsType<ActionResult<IEnumerable<TodoItem>>>(result);
 		}
 
 		[Fact]
 		public async Task GetTodoItem_ReturnsTodoItem()
 		{
+			// Arrange
 			var mockRepo = new Mock<ITodoRepository>();
 			var expectedItem = new TodoItem
 			{
@@ -73,8 +82,11 @@ namespace XUnitTests
 			mockRepo.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync(expectedItem);
 
 			var controller = new TodoController(mockRepo.Object);
+
+			// Act
 			var result = await controller.GetTodoItem(1);
 
+			// Assert
 			Assert.IsType<ActionResult<TodoItem>>(result);
 			var okResult = Assert.IsType<OkObjectResult>(result.Result);
 			var returnedItem = Assert.IsType<TodoItem>(okResult.Value);
@@ -86,12 +98,16 @@ namespace XUnitTests
 		[Fact]
 		public async Task GetTodoItem_InvalidId_ReturnsNotFound()
 		{
+			// Arrange
 			var mockRepo = new Mock<ITodoRepository>();
 			mockRepo.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync((TodoItem)null);
 
 			var controller = new TodoController(mockRepo.Object);
+
+			// Act
 			var result = await controller.GetTodoItem(1);
 
+			// Assert
 			Assert.IsType<ActionResult<TodoItem>>(result);
 			Assert.IsType<NotFoundResult>(result.Result);
 		}
@@ -99,6 +115,7 @@ namespace XUnitTests
 		[Fact]
 		public async Task DeleteTodoItem_NoContent()
 		{
+			// Arrange
 			var mockRepo = new Mock<ITodoRepository>();
 			var existingItem = new TodoItem
 			{
@@ -110,26 +127,34 @@ namespace XUnitTests
 			mockRepo.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync(existingItem);
 
 			var controller = new TodoController(mockRepo.Object);
+
+			// Act
 			var result = await controller.DeleteTodoItem(1);
 
+			// Assert
 			Assert.IsType<NoContentResult>(result);
 		}
 
 		[Fact]
 		public async Task DeleteTodoItem_NotFound()
 		{
+			// Arrange
 			var mockRepo = new Mock<ITodoRepository>();
 			mockRepo.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync((TodoItem)null);
 
 			var controller = new TodoController(mockRepo.Object);
+
+			// Act
 			var result = await controller.DeleteTodoItem(1);
 
+			// Assert
 			Assert.IsType<NotFoundResult>(result);
 		}
 
 		[Fact]
 		public async Task UpdateTodoItem_NoContent()
 		{
+			// Arrange
 			var mockRepo = new Mock<ITodoRepository>();
 			var updatedItem = new TodoItem
 			{
@@ -148,14 +173,18 @@ namespace XUnitTests
 			mockRepo.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync(existingItem);
 
 			var controller = new TodoController(mockRepo.Object);
+
+			// Act
 			var result = await controller.UpdateTodoItem(1, updatedItem);
 
+			// Assert
 			Assert.IsType<NoContentResult>(result);
 		}
 
 		[Fact]
 		public async Task UpdateTodoItem_BadRequest()
 		{
+			// Arrange
 			var mockRepo = new Mock<ITodoRepository>();
 			var updatedItem = new TodoItem
 			{
@@ -165,8 +194,11 @@ namespace XUnitTests
 			};
 
 			var controller = new TodoController(mockRepo.Object);
+
+			// Act
 			var result = await controller.UpdateTodoItem(2, updatedItem);
 
+			// Assert
 			Assert.IsType<BadRequestResult>(result);
 		}
 
