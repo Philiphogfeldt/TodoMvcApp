@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
+using System.Linq;
+using System.Threading.Tasks;
 using TodoMvcApp.Interfaces;
 using TodoMvcApp.Models;
 
@@ -28,12 +29,18 @@ namespace TodoMvcApp.Data
 		{
 			_context.TodoItems.Add(item);
 			await _context.SaveChangesAsync();
+
 		}
 
 		public async Task UpdateAsync(TodoItem item)
 		{
-			_context.Entry(item).State = EntityState.Modified;
-			await _context.SaveChangesAsync();
+			var existingItem = await _context.TodoItems.FindAsync(item.Id);
+			if (existingItem != null)
+			{
+				existingItem.Name = item.Name;
+				existingItem.IsDone = item.IsDone;
+				await _context.SaveChangesAsync();
+			}
 		}
 
 		public async Task DeleteAsync(int id)
@@ -45,6 +52,25 @@ namespace TodoMvcApp.Data
 				await _context.SaveChangesAsync();
 			}
 		}
-	}
 
+		public async Task ToggleAllAsync()
+		{
+			var allItems = await _context.TodoItems.ToListAsync();
+			bool allCompleted = allItems.All(x => x.IsDone);
+
+			foreach (var item in allItems)
+			{
+				item.IsDone = !allCompleted;
+			}
+
+			await _context.SaveChangesAsync();
+		}
+
+		public async Task ClearAllCompletedAsync()
+		{
+			var completedItems = _context.TodoItems.Where(x => x.IsDone).ToList();
+			_context.TodoItems.RemoveRange(completedItems);
+			await _context.SaveChangesAsync();
+		}
+	}
 }

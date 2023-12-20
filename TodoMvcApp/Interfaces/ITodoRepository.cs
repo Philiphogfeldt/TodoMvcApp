@@ -9,6 +9,7 @@ namespace TodoMvcApp.Interfaces
 		Task AddAsync(TodoItem item);
 		Task UpdateAsync(TodoItem item);
 		Task DeleteAsync(int id);
+		Task ToggleAllAsync();
+		Task ClearAllCompletedAsync();
 	}
-
 }
