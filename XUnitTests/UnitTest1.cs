@@ -127,5 +127,48 @@ namespace XUnitTests
 			Assert.IsType<NotFoundResult>(result);
 		}
 
+		[Fact]
+		public async Task UpdateTodoItem_NoContent()
+		{
+			var mockRepo = new Mock<ITodoRepository>();
+			var updatedItem = new TodoItem
+			{
+				Id = 1,
+				Name = "Updated Todo",
+				IsDone = true
+			};
+
+			var existingItem = new TodoItem
+			{
+				Id = 1,
+				Name = "Original Todo",
+				IsDone = false
+			};
+
+			mockRepo.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync(existingItem);
+
+			var controller = new TodoController(mockRepo.Object);
+			var result = await controller.UpdateTodoItem(1, updatedItem);
+
+			Assert.IsType<NoContentResult>(result);
+		}
+
+		[Fact]
+		public async Task UpdateTodoItem_BadRequest()
+		{
+			var mockRepo = new Mock<ITodoRepository>();
+			var updatedItem = new TodoItem
+			{
+				Id = 1,
+				Name = "Updated Todo",
+				IsDone = true
+			};
+
+			var controller = new TodoController(mockRepo.Object);
+			var result = await controller.UpdateTodoItem(2, updatedItem);
+
+			Assert.IsType<BadRequestResult>(result);
+		}
+
 	}
 }
